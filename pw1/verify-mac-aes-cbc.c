@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "aes.c"
 
 typedef unsigned char BYTE;
@@ -9,7 +10,7 @@ void aes_decrypt(BYTE* message, BYTE* cipher, BYTE *key);
 
 int main(int argc, char const *argv[]){
   if(argc != 3){
-    printf("Enter input file and output file!\n");
+    printf("Enter input file and MAC value!\n");
     return -1;
   }
 
@@ -60,14 +61,28 @@ int main(int argc, char const *argv[]){
     }
 
     printf("Encrypted!\n");
-    FILE *output = fopen(argv[2], "wb");
-    if(output){
-      printf("Writing to %s\n", argv[2]);
-      fwrite(content - total, 1, total, output);
-      fclose(output);
-    }
-    printf("Exit!\n");
-    return 0;
-  }
-}
 
+    char MAC[2];
+    char macgood = 1;
+
+    if(strlen(argv[2]) == 16*2 ){
+      for(i=0; i<16; i++){
+        sprintf(MAC, "%x", *(content - 16 + i));
+          if (tolower(MAC[0]) != tolower(argv[2][i * 2]) || tolower(MAC[1]) != tolower(argv[2][i * 2 + 1])){
+              macgood = 0;
+              break;
+          }else{
+            macgood = 0;
+          }
+      }
+    }
+
+    if(macgood){
+      printf("MAC value is correct!\n");
+    }else{
+      printf("MAC value is incorrect!\n");
+    }
+  }
+  printf("\nExit\n");
+  return 0;
+}

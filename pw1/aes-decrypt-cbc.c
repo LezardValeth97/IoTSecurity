@@ -17,9 +17,10 @@ int main(int argc, char const *argv[]){
   BYTE K[16] = {0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C};
   BYTE *content = 0;
   BYTE cbc[16] = {0};
+  BYTE temp[16];
   long length;
   char padding;
-  long total;
+  long final;
 
   FILE *input = fopen(argv[1], "rb");
   if(input){
@@ -28,12 +29,12 @@ int main(int argc, char const *argv[]){
     length = ftell(input); // obtains the current value  of  the  file
     //printf("%ld\n", length);
     padding = (length % 16) ? (16 - length % 16) : 16; 
-    total = length + padding;
+    //total = length + padding;
     //printf("%ld\n", total);
 
     fseek(input, 0, SEEK_SET);
     printf("Allocating memory for input...\n");
-    content = malloc(total);
+    content = malloc(length);
     if(content){
       // reads data from input into the array pointed to content
       fread(content, 1, length, input);
@@ -42,28 +43,31 @@ int main(int argc, char const *argv[]){
   }
 
   if (content){
-    printf("File size: %li\n", length);
-    printf("Padding Size: %d\n", padding);
     int i, j, block;
-    for(i=0; i<padding; i++){
-      content[length+i] = padding;
-    }
 
-    block = total/16;
+    block = length/16;
     for(i=0; i<block; i++){
+      memcpy(temp, content, 16);
+      aes_decrypt(content, content, K);
       for(j=0; j<16; j++){
-        cbc[j] ^= content[j];
+        content[j] ^= cbc[j];
       }
-      aes_encrypt(cbc, cbc, K);
-      memcpy(content, cbc, 16); // copy 16 bytes from cbc to content
+      memcpy(cbc, temp, 16);
       content += 16;
     }
 
-    printf("Encrypted!\n");
+    content -= length;
+
+    printf("Decrypted!\n");
+    printf("Ready to unpadding!\n");
+    padding = content[length-1];
+    final = length - padding;
+    printf("Padding Lenght = %d\n", padding);
+
     FILE *output = fopen(argv[2], "wb");
     if(output){
       printf("Writing to %s\n", argv[2]);
-      fwrite(content - total, 1, total, output);
+      fwrite(content, 1, final, output);
       fclose(output);
     }
     printf("Exit!\n");

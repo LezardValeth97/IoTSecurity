@@ -1,0 +1,35 @@
+
+mpz_init or mpz_inits
+mpz_clear or mpz_clears
+
+mpz_set_ui or mpz_init_set_ui
+mpz_set or mpz_init_set
+
+gmp_randinit_default
+gmp_randseed_ui
+mpz_urandomb
+mpz_urandomm
+
+gmp_printf
+	
+mpz_setbit
+
+mpz_nextprime
+	
+mpz_add or mpz_add_ui
+mpz_sub or mpz_sub_ui
+mpz_mul or mpz_mul_ui
+
+mpz_sizeinbase
+
+mpz_gcd_ui
+mpz_invert
+
+mpz_mod
+  
+mpz_set_str
+mpz_get_str
+	
+mpz_powm
+
+
